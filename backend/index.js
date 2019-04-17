@@ -1,28 +1,33 @@
-const firebase = require('firebase-admin');
 const express = require('express');
 const bodyParser = require('body-parser');
+const admin = require('firebase-admin');
+const serviceAccount = require('./service-account.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://cs-a6-45e06.firebaseio.com'
+});
+
+const db = admin.firestore();
 
 const app = express();
 const port = 8080;
-
-let data = [];
-
 app.use(bodyParser.json());
 
-app.get('/api/contact-cards', (_, resp) => {
-  // this line is added to ensure the loading message is displayed correctly
-  // we should probably also let students do that.
-  setTimeout(() => resp.json(data), 1000);
+const data = db.collection('cards');
+
+app.get('/api/contact-cards', async (_, resp) => {
+  const cards = await data.get();
+  setTimeout(() => resp.status(200).json(cards.docs.map(doc => ({ id: doc.id, ...doc.data() }))), 1000);
 });
 
-app.post('/api/add-contact-card', (req, resp) => {
+
+app.post('/api/add-contact-card', async (req, resp) => {
   const card = req.body;
-  if (data.some(c => c.email === card.email)) {
-    resp.status(200).send('NOT_OK');
-  } else {
-    data.push(card);
-    resp.status(200).send('OK')
-  }
+  console.log(card);
+  const cardsAdd = await data.add(card);
+  setTimeout(() => resp.status(200).send(cardsAdd.id), 1000);
 });
+
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));
