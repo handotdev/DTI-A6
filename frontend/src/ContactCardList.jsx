@@ -6,7 +6,7 @@ export default class ContactCardList extends Component {
   state = { data: null };
 
   componentDidMount() {
-    fetch('/api/contact-cards')
+    fetch('/api/contact-cards', { method: 'GET' })
       .then(resp => resp.json())
       .then(data => this.setState({ data }));
   }

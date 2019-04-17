@@ -1,3 +1,4 @@
+const firebase = require('firebase-admin');
 const express = require('express');
 const bodyParser = require('body-parser');
 
